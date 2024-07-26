@@ -9,32 +9,34 @@
 * numpy
 * json
 * cv2
-* sys
+* argparse
 * os
 
-## 运行方式及示例
+## 运行方式
 
 在Windows命令行中运行。注意先使用``cd``命令切换到包含Python脚本的目录。
 
-###### 0个参数：
+可以在命令行中输入``-j``，``-i``，``-o``三个参数来分别指定``.json``文件、输入图片所在的文件夹、输出图片要存放到的文件夹的目录。
+
+不输入参数时，它们的默认值分别为``result.json``，``image``和``result``。
+
+## 运行示例
 
 ```
 python contourdrawer.py
 ```
 读取与``contourdrawer.py``脚本在同一目录下的``result.json``文件和``image``文件夹中的图片，绘制框体后保存在同一目录下的``result``文件夹中。
 
-###### 1个参数，指定.json文件目录：
 
 ```
-python contourdrawer.py D:\test.json
+python contourdrawer.py -j D:\test.json
 ```
-读取指定目录下的``.json``文件，以及和``contourdrawer.py``脚本在同一目录下的``image``文件夹中的图片，绘制框体后保存在和``contourdrawer.py``脚本同一目录下的``result``文件夹中。
+读取``D:\test.json``文件，以及和``contourdrawer.py``脚本在同一目录下的``image``文件夹中的图片，绘制框体后保存在和``contourdrawer.py``脚本同一目录下的``result``文件夹中。
 
-###### 3个参数，指定.json文件和输入输出图片文件夹目录：
 
 ```
-python contourdrawer.py D:\test.json D:\input D:\output
+python contourdrawer.py -j D:\test.json -i D:\input -o D:\output
 ```
-读取指定目录下的``.json``文件和输入文件夹中的图片，绘制框体后保存指定目录下的输出文件夹中。
+读取``D:\test.json``文件以及``D:\input``文件夹中的图片，绘制框体后保存到``D:\output``文件夹中。
 
-###### 参数数量不正确或指定的输入文件目录不存在将会报错。
+###### 若输出文件夹不存在，脚本会自动在指定目录下创建文件夹。参数数量多于3个，格式不正确或指定的输入文件目录不存在将会报错。
