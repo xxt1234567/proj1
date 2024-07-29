@@ -40,7 +40,6 @@ def drawcontour(data,finput,foutput,showimg=False):
             cv2.destroyAllWindows()
         cv2.imwrite(os.path.join(foutput,data[i]['file_name']),image)
 
-        
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description='Expected 0 to 3 arguments')
     parser.add_argument('-j','--fjs',type=str,default='result.json')
