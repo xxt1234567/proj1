@@ -30,7 +30,7 @@ def getcontourdata(info,rects):
 def drawcontour(data,finput,foutput,showimg=False):
     colors=[(0,0,0),(255,0,0),(0,255,0),(0,0,255)]
     for i in data:
-        image=cv2.imread(finput+data[i]['file_name'])
+        image=cv2.imread(os.path.join(finput,data[i]['file_name']))
         for j in range(len(data[i]['segmentation'])):
             cv2.drawContours(image,[data[i]['segmentation'][j]],-1,colors[data[i]['category_id'][j]-1],1)
             cv2.putText(image,str(data[i]['category_id'][j]),(data[i]['segmentation'][j][0][0],data[i]['segmentation'][j][0][1]),cv2.FONT_HERSHEY_SIMPLEX,0.5,colors[data[i]['category_id'][j]-1],1)
@@ -38,20 +38,18 @@ def drawcontour(data,finput,foutput,showimg=False):
             cv2.imshow('image',image)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
-        cv2.imwrite(foutput+data[i]['file_name'],image)
+        cv2.imwrite(os.path.join(foutput,data[i]['file_name']),image)
 
         
 if __name__ == '__main__':
-    
     parser=argparse.ArgumentParser(description='Expected 0 to 3 arguments')
     parser.add_argument('-j','--fjs',type=str,default='result.json')
-    parser.add_argument('-i','--finput',type=str,default='.\image\\')
-    parser.add_argument('-o-','--foutput',type=str,default='.\\result\\')
+    parser.add_argument('-i','--finput',type=str,default=os.path.join(os.getcwd(),'image'))
+    parser.add_argument('-o','--foutput',type=str,default=os.path.join(os.getcwd(),'result'))
     args=parser.parse_args()
     fjs=args.fjs
-    finput=args.finput+'\\'
-    foutput=args.foutput+'\\'
-    
+    finput=args.finput
+    foutput=args.foutput
     if not(os.path.exists(foutput)):
         os.mkdir(foutput)
         

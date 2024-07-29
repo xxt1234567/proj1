@@ -4,13 +4,14 @@
 
 一个python脚本，通过读取存放在json文件中的标注信息，在图片中画出标注框体和类别并另存。
 
-## 所需python库
+## 所需环境和库
 
-* numpy
+* python 3.9.13
 * json
-* cv2
 * argparse
 * os
+* numpy 1.23.5
+* opencv-python 4.9.0.80
 
 ## 运行方式
 
