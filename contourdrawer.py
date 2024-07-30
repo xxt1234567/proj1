@@ -3,9 +3,28 @@ import numpy as np
 import cv2
 import os
 import argparse
-from random import *
+import random
 
-def draw(fin, fout, seg, cat, showimg=False):
+def randomcolors(cnt):
+    '''
+    产生一组随机颜色
+    
+    输入：
+    cnt：int，需要的颜色数量
+    
+    输出：
+    colors：list，每个元素是一个三元组，表示一种颜色
+    '''
+    random.seed(0)
+    colors = []
+    for i in range(cnt):
+        c = [144, 255, random.randint(0, 255)]
+        random.shuffle(c)
+        colors.append(tuple(c))
+    return colors
+
+
+def draw(fin, fout, seg, cat, showimg=True):
     '''
     绘制框体
     
@@ -18,20 +37,12 @@ def draw(fin, fout, seg, cat, showimg=False):
     
     输出：无
     '''
-    '''
-    cnum = max(cat)
-    seed(0)
-    colors = []
-    for i in range(cnum):
-        rgb = (randint(0, 255), randint(0, 255), randint(0, 255))
-        colors.append(rgb)
-    '''
-    colors = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+    colors = randomcolors(max(cat))
     image = cv2.imread(fin)    
     for i in range(len(seg)):
-        cv2.drawContours(image, [seg[i]], -1, colors[cat[i] - 1], 1)
+        cv2.drawContours(image, [seg[i]], -1, colors[cat[i] - 1], 2)
         cv2.putText(image, str(cat[i]), (seg[i][0][0], seg[i][0][1]),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[cat[i] - 1], 1)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[cat[i] - 1], 2)
     if showimg:
         cv2.imshow('image', image)
         cv2.waitKey(0)
@@ -54,16 +65,18 @@ def drawcontour(fjs, finput, foutput):
     js = json.loads(json_str)
     img = js['images']
     anno = js['annotations']
+    if (len(img) == 0 or len(anno) == 0):
+        print("The file is empty!")
+        return
     imgname = {}
     for i in img:
         imgname[i['id']] = i['file_name']
-    id0 = None
+    id0 = anno[0]['image_id']
     seg = []
     cat = []
     for i in anno:
-        if not(i['image_id'] == id0):
-            if not(id0 is None):
-                draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat)
+        if (i['image_id'] != id0):
+            draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat)
             id0 = i['image_id']
             seg = []
             cat = []
@@ -76,8 +89,7 @@ def drawcontour(fjs, finput, foutput):
         i['segmentation'] = list(map(int, i['segmentation']))
         seg.append(np.array(i['segmentation']).reshape(4, 2))
         cat.append(i['category_id'])
-    if not(id0 is None):
-        draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat)    
+    draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat)    
         
 def run():
     '''
