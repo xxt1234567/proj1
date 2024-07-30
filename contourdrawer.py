@@ -24,7 +24,7 @@ def randomcolors(cnt):
     return colors
 
 
-def draw(fin, fout, seg, cat, showimg=True):
+def draw(fin, fout, seg, cat, showimg):
     '''
     绘制框体
     
@@ -37,6 +37,10 @@ def draw(fin, fout, seg, cat, showimg=True):
     
     输出：无
     '''
+    if not(os.path.exists(fin)):
+        print('The file ' + fin + ' does not exist!')
+        return
+    
     colors = randomcolors(max(cat))
     image = cv2.imread(fin)    
     for i in range(len(seg)):
@@ -49,7 +53,7 @@ def draw(fin, fout, seg, cat, showimg=True):
         cv2.destroyAllWindows()
     cv2.imwrite(fout, image)
 
-def drawcontour(fjs, finput, foutput):
+def drawcontour(fjs, finput, foutput, showimg):
     '''
     从json文件中读取数据，并将数据传入draw函数进行绘制
     
@@ -57,6 +61,7 @@ def drawcontour(fjs, finput, foutput):
     fjs：str，json文件路径
     finput：str，输入图片所在文件夹的路径
     foutput：str，输出图片所在文件夹的路径
+    showimg：bool，是否在运行时展示绘制结果
     
     输出：无
     '''
@@ -65,9 +70,11 @@ def drawcontour(fjs, finput, foutput):
     js = json.loads(json_str)
     img = js['images']
     anno = js['annotations']
+    
     if (len(img) == 0 or len(anno) == 0):
-        print("The file is empty!")
+        print("The .json file is empty!")
         return
+    
     imgname = {}
     for i in img:
         imgname[i['id']] = i['file_name']
@@ -76,7 +83,7 @@ def drawcontour(fjs, finput, foutput):
     cat = []
     for i in anno:
         if (i['image_id'] != id0):
-            draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat)
+            draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg)
             id0 = i['image_id']
             seg = []
             cat = []
@@ -89,7 +96,7 @@ def drawcontour(fjs, finput, foutput):
         i['segmentation'] = list(map(int, i['segmentation']))
         seg.append(np.array(i['segmentation']).reshape(4, 2))
         cat.append(i['category_id'])
-    draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat)    
+    draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg)    
         
 def run():
     '''
@@ -99,17 +106,26 @@ def run():
     
     输出：无
     '''
-    parser = argparse.ArgumentParser(description = 'Expected 0 to 3 arguments')
+    parser = argparse.ArgumentParser(description = 'Expected 0 to 4 arguments.')
     parser.add_argument('-j', '--fjs', type=str, default='result.json')
     parser.add_argument('-i', '--finput', type=str, default=os.path.join(os.getcwd(), 'image'))
     parser.add_argument('-o', '--foutput', type=str, default=os.path.join(os.getcwd(), 'result'))
+    parser.add_argument('-s', '--showimg', type=int, default=0)
     args = parser.parse_args()
     fjs = args.fjs
     finput = args.finput
     foutput = args.foutput
+    showimg = (args.showimg != 0)
+    
+    if not(os.path.exists(fjs)):
+        print('The file ' + fjs + ' does not exist!')
+        return
+    if not(os.path.exists(finput)):
+        print('The file ' + finput + ' does not exist!')
+        return
     if not(os.path.exists(foutput)):
         os.mkdir(foutput)
-    drawcontour(fjs, finput, foutput)
+    drawcontour(fjs, finput, foutput, showimg)
 
 if __name__ == '__main__':
     run()

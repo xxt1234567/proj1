@@ -14,27 +14,29 @@
 
 在Windows命令行中运行。注意先使用``cd``命令切换到包含Python脚本的目录。
 
-可以在命令行中输入``-j``，``-i``，``-o``三个参数来分别指定``.json``文件、输入图片所在的文件夹、输出图片要存放到的文件夹的目录。
+可以在命令行中输入``-j``，``-i``，``-o``，三个参数来分别指定``.json``文件、输入图片所在的文件夹、输出图片要存放到的文件夹的目录。
 
-不输入参数时，它们的默认值分别为``result.json``，``image``和``result``。
+输入``-s``参数可以指定是否在运行时展示绘制结果。``-s``为0时表示不展示，为非0整数时表示展示。
+
+不输入参数时，四个参数的默认值分别为``result.json``，``image``，``result``，``0``。
 
 ## 运行示例
 
 ```
 python contourdrawer.py
 ```
-读取与``contourdrawer.py``脚本在同一目录下的``result.json``文件和``image``文件夹中的图片，绘制框体后保存在同一目录下的``result``文件夹中。
+读取与``contourdrawer.py``脚本在同一目录下的``result.json``文件和``image``文件夹中的图片，绘制框体后保存在同一目录下的``result``文件夹中，运行时不展示绘制结果。
 
 
 ```
-python contourdrawer.py -j D:\test.json
+python contourdrawer.py -j D:\test.json -s 1
 ```
-读取``D:\test.json``文件，以及和``contourdrawer.py``脚本在同一目录下的``image``文件夹中的图片，绘制框体后保存在和``contourdrawer.py``脚本同一目录下的``result``文件夹中。
+读取``D:\test.json``文件，以及和``contourdrawer.py``脚本在同一目录下的``image``文件夹中的图片，绘制框体后保存在和``contourdrawer.py``脚本同一目录下的``result``文件夹中，运行时展示绘制结果。
 
 
 ```
-python contourdrawer.py -j D:\test.json -i D:\input -o D:\output
+python contourdrawer.py -j D:\test.json -i D:\input -o D:\output -s 123
 ```
-读取``D:\test.json``文件以及``D:\input``文件夹中的图片，绘制框体后保存到``D:\output``文件夹中。
+读取``D:\test.json``文件以及``D:\input``文件夹中的图片，绘制框体后保存到``D:\output``文件夹中，运行时展示绘制结果。
 
-###### 若输出文件夹不存在，脚本会自动在指定目录下创建文件夹。参数数量多于3个，格式不正确或指定的输入文件目录不存在将会报错。
+###### 若输出文件夹不存在，脚本会自动在指定目录下创建文件夹。若输入文件为空或不存在，将输出提示信息。若输入参数数量多于4个或格式不正确将会报错。
