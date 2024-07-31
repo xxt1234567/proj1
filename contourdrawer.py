@@ -38,8 +38,7 @@ def draw(fin, fout, seg, cat, showimg):
     输出：无
     '''
     if not(os.path.exists(fin)):
-        print('The file ' + fin + ' does not exist!')
-        return
+        raise IOError(f'The file {fin} does not exist!')
     
     colors = randomcolors(max(cat))
     image = cv2.imread(fin)    
@@ -72,31 +71,33 @@ def drawcontour(fjs, finput, foutput, showimg):
     anno = js['annotations']
     
     if (len(img) == 0 or len(anno) == 0):
-        print("The .json file is empty!")
-        return
+        raise IOError('The .json file is empty!')
     
     imgname = {}
     for i in img:
         imgname[i['id']] = i['file_name']
+    
     id0 = anno[0]['image_id']
     seg = []
     cat = []
-    for i in anno:
-        if (i['image_id'] != id0):
-            draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg)
-            id0 = i['image_id']
+    for i in range(len(anno)):
+        if (len(anno[i]['segmentation']) == 4):
+            temp = [anno[i]['segmentation'][0], anno[i]['segmentation'][1],
+                    anno[i]['segmentation'][0], anno[i]['segmentation'][3],
+                    anno[i]['segmentation'][2], anno[i]['segmentation'][3],
+                    anno[i]['segmentation'][2], anno[i]['segmentation'][1]]
+            anno[i]['segmentation'] = temp
+        anno[i]['segmentation'] = list(map(int, anno[i]['segmentation']))
+        seg.append(np.array(anno[i]['segmentation']).reshape(4, 2))
+        cat.append(anno[i]['category_id'])
+        if (i == len(anno)-1 or anno[i]['image_id'] != id0):
+            try:
+                draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg) 
+            except KeyError:
+                print(f'The .json file does not contain the file_name of image_id {id0}!')
+            id0 = anno[i]['image_id']
             seg = []
             cat = []
-        if (len(i['segmentation']) == 4):
-            temp = [i['segmentation'][0], i['segmentation'][1],
-                    i['segmentation'][0], i['segmentation'][3],
-                    i['segmentation'][2], i['segmentation'][3],
-                    i['segmentation'][2], i['segmentation'][1]]
-            i['segmentation'] = temp
-        i['segmentation'] = list(map(int, i['segmentation']))
-        seg.append(np.array(i['segmentation']).reshape(4, 2))
-        cat.append(i['category_id'])
-    draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg)    
         
 def run():
     '''
@@ -118,11 +119,9 @@ def run():
     showimg = (args.showimg != 0)
     
     if not(os.path.exists(fjs)):
-        print('The file ' + fjs + ' does not exist!')
-        return
+        raise IOError(f'The file {fjs} does not exist!')
     if not(os.path.exists(finput)):
-        print('The file ' + finput + ' does not exist!')
-        return
+        raise IOError(f'The file {finput} does not exist!')
     if not(os.path.exists(foutput)):
         os.mkdir(foutput)
     drawcontour(fjs, finput, foutput, showimg)
