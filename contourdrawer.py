@@ -38,7 +38,7 @@ def draw(fin, fout, seg, cat, showimg):
     输出：无
     '''
     if not(os.path.exists(fin)):
-        raise IOError(f'The file {fin} does not exist!')
+        raise FileNotFoundError(f'The file {fin} does not exist!')
     
     colors = randomcolors(max(cat))
     image = cv2.imread(fin)    
@@ -71,7 +71,7 @@ def drawcontour(fjs, finput, foutput, showimg):
     anno = js['annotations']
     
     if (len(img) == 0 or len(anno) == 0):
-        raise IOError('The .json file is empty!')
+        raise ValueError('The .json file is empty!')
     
     imgname = {}
     for i in img:
@@ -112,17 +112,17 @@ def run():
     parser.add_argument('-j', '--fjs', type=str, default='result.json')
     parser.add_argument('-i', '--finput', type=str, default=os.path.join(os.getcwd(), 'image'))
     parser.add_argument('-o', '--foutput', type=str, default=os.path.join(os.getcwd(), 'result'))
-    parser.add_argument('-s', '--showimg', type=int, default=0)
+    parser.add_argument('-s', '--showimg', action='store_true', default=False)
     args = parser.parse_args()
     fjs = args.fjs
     finput = args.finput
     foutput = args.foutput
-    showimg = (args.showimg != 0)
+    showimg = args.showimg
     
     if not(os.path.exists(fjs)):
-        raise IOError(f'The file {fjs} does not exist!')
+        raise FileNotFoundError(f'The file {fjs} does not exist!')
     if not(os.path.exists(finput)):
-        raise IOError(f'The file {finput} does not exist!')
+        raise FileNotFoundError(f'The file {finput} does not exist!')
     if not(os.path.exists(foutput)):
         os.mkdir(foutput)
     drawcontour(fjs, finput, foutput, showimg)
