@@ -90,14 +90,15 @@ def drawcontour(fjs, finput, foutput, showimg):
         anno[i]['segmentation'] = list(map(int, anno[i]['segmentation']))
         seg.append(np.array(anno[i]['segmentation']).reshape(4, 2))
         cat.append(anno[i]['category_id'])
-        if (i == len(anno)-1 or anno[i]['image_id'] != id0):
+        if (i == len(anno) - 1 or anno[i + 1]['image_id'] != id0):
             try:
                 draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg) 
             except KeyError:
                 print(f'The .json file does not contain the file_name of image_id {id0}!')
-            id0 = anno[i]['image_id']
-            seg = []
-            cat = []
+            if (i < len(anno) - 1):
+                id0 = anno[i + 1]['image_id']
+                seg = []
+                cat = []
         
 def run():
     '''
