@@ -5,6 +5,20 @@ import os
 import argparse
 import random
 
+def process_bar(current, total):
+    '''
+    打印进度条
+    
+    输入：
+    current：int，当前进度
+    total：int，总进度
+    
+    输出：无
+    '''
+    b = '=' * int(current / total * 50)
+    bar = f'绘制进度 |{b.ljust(50)}| ({current}/{total}) {current / total:.1%} | '
+    print(bar, end='\r', flush=True)
+
 def randomcolors(cnt):
     '''
     产生一组随机颜色
@@ -18,13 +32,12 @@ def randomcolors(cnt):
     random.seed(0)
     colors = []
     for i in range(cnt):
-        c = [144, 255, random.randint(0, 255)]
-        random.shuffle(c)
-        colors.append(tuple(c))
+        c = (random.randint(128,255), random.randint(0,127), random.randint(0,255))
+        colors.append(c)
     return colors
 
 
-def draw(fin, fout, seg, cat, showimg):
+def draw(fin, fout, seg, cat, colors, showimg):
     '''
     绘制框体
     
@@ -33,6 +46,7 @@ def draw(fin, fout, seg, cat, showimg):
     fout：str，输出图片路径
     seg：list，每个元素是一个4 * 2的numpy array，记录一个框体四个顶点的坐标
     cat：list，框体的类别
+    colors：dict，每种类别对应的颜色
     showimg：bool，是否在运行时展示绘制结果
     
     输出：无
@@ -40,12 +54,11 @@ def draw(fin, fout, seg, cat, showimg):
     if not(os.path.exists(fin)):
         raise FileNotFoundError(f'The file {fin} does not exist!')
     
-    colors = randomcolors(max(cat))
     image = cv2.imread(fin)    
     for i in range(len(seg)):
-        cv2.drawContours(image, [seg[i]], -1, colors[cat[i] - 1], 2)
+        cv2.drawContours(image, [seg[i]], -1, colors[cat[i]], 2)
         cv2.putText(image, str(cat[i]), (seg[i][0][0], seg[i][0][1]),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[cat[i] - 1], 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[cat[i]], 2)
     if showimg:
         cv2.imshow('image', image)
         cv2.waitKey(0)
@@ -64,18 +77,25 @@ def drawcontour(fjs, finput, foutput, showimg):
     
     输出：无
     '''
-    with open(fjs, 'r', encoding = 'utf-8') as file:  
+    with open(fjs, 'r', encoding='utf-8') as file:  
         json_str = file.read()
     js = json.loads(json_str)
     img = js['images']
     anno = js['annotations']
+    cate = js['categories']
     
-    if (len(img) == 0 or len(anno) == 0):
+    if (len(img) == 0 or len(anno) == 0 or len(cate) == 0):
         raise ValueError('The .json file is empty!')
     
     imgname = {}
     for i in img:
         imgname[i['id']] = i['file_name']
+    c = randomcolors(len(cate))
+    colors = {}
+    for i in range(len(cate)):
+        colors[cate[i]['id']] = c[i]
+        print(cate[i]['id'], ':', cate[i]['name'])
+    
     
     id0 = anno[0]['image_id']
     seg = []
@@ -92,13 +112,14 @@ def drawcontour(fjs, finput, foutput, showimg):
         cat.append(anno[i]['category_id'])
         if (i == len(anno) - 1 or anno[i + 1]['image_id'] != id0):
             try:
-                draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, showimg) 
+                draw(os.path.join(finput, imgname[id0]), os.path.join(foutput, imgname[id0]), seg, cat, colors, showimg) 
             except KeyError:
                 print(f'The .json file does not contain the file_name of image_id {id0}!')
             if (i < len(anno) - 1):
                 id0 = anno[i + 1]['image_id']
                 seg = []
                 cat = []
+        process_bar(i + 1, len(anno))
         
 def run():
     '''
@@ -112,7 +133,7 @@ def run():
     parser.add_argument('-j', '--fjs', type=str, default='result.json')
     parser.add_argument('-i', '--finput', type=str, default=os.path.join(os.getcwd(), 'image'))
     parser.add_argument('-o', '--foutput', type=str, default=os.path.join(os.getcwd(), 'result'))
-    parser.add_argument('-s', '--showimg', action='store_true', default=False)
+    parser.add_argument('-s', '--showimg', action='store_true')
     args = parser.parse_args()
     fjs = args.fjs
     finput = args.finput
